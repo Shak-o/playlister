@@ -5,11 +5,11 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace PlayLister.Services.Models
+namespace PlayLister.Services.Models.Youtube
 {
-    public class YoutubeSnippet
+    public class YoutubeThumbnail
     {
-        [JsonPropertyName("title")]
-        public string Title { get; set; }
+        [JsonPropertyName("default")]
+        public YoutubeDefault ThumbnailDefault { get; set; }
     }
 }

@@ -9,8 +9,7 @@ namespace PlayLister.Services.Interfaces
 {
     public interface IPlaylistConverter
     {
-        Task<YoutubeData> GetYoutubePlaylists(string channelName);
-        Task<List<YoutubeItem>> GetPlaylistItems(string playlistId);
+        Task<PlaylistData> GetPlaylistItems(string channelId, string playlistName);
         Task MakeSpotifyPlaylist(string playlistId);
     }
 }

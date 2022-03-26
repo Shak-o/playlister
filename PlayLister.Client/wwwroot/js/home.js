@@ -1,9 +1,7 @@
 ﻿// Questions Array
 const questions = [
-    { question: 'Enter Your First Name' },
-    { question: 'Enter Your Last Name' },
-    { question: 'Enter Your Email', pattern: /\S+@\S+\.\S+/ },
-    { question: 'Create A Password', type: 'password' }
+    { question: 'Enter Channel Link:' },
+    { question: 'Enter Playlist Name:' }
 ];
 
 // Transition Times
@@ -133,14 +131,5 @@ function inputPass() {
 function formComplete() {
     const h1 = document.createElement('h1');
     h1.classList.add('end');
-    h1.appendChild(
-        document.createTextNode(
-            `Thanks ${questions[0].answer
-            } You are registered and will get an email shortly`
-        )
-    );
-    setTimeout(() => {
-        formBox.parentElement.appendChild(h1);
-        setTimeout(() => (h1.style.opacity = 1), 50);
-    }, 1000);
+    window.location.replace("/list?channelLink="+questions[0].answer+"&playlistName="+questions[1].answer);
 }

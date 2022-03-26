@@ -23,8 +23,14 @@ namespace PlayLister.Client.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpGet("list")]
+        public async Task<IActionResult> ConvertList(string channelLink, string playlistName)
         {
+            int index = channelLink.IndexOf("channel/");
+            string id = channelLink.Substring(index + 8);
+
+            var list = await _converter.GetPlaylistItems(id, playlistName);
+
             return View();
         }
 
