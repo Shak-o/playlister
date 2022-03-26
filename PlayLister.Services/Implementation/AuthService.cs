@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using PlayLister.Infrastructure.Context;
 using PlayLister.Infrastructure.Models;
+using PlayLister.Infrastructure.Repositories.Interfaces;
 using PlayLister.Services.Helpers;
 using PlayLister.Services.Models;
 
@@ -16,11 +17,11 @@ namespace PlayLister.Services.Implementation
 {
     public class AuthService : IAuthService
     {
-        public PlayListerContext _context;
+        private readonly IAppDataRepository _repository;
 
-        public AuthService(PlayListerContext context)
+        public AuthService(IAppDataRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public string GetUri()
@@ -72,7 +73,7 @@ namespace PlayLister.Services.Implementation
         }
         private AppData? GetClientId()
         {
-            var data = _context.AppData.FirstOrDefault();
+            var data = _repository.GetData();
             return data;
 
         }

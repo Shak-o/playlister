@@ -7,13 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 using PlayLister.Services.Implementation;
 using PlayLister.Services.Interfaces;
 
-namespace PlayLister.Services
+namespace PlayLister.Services.Extensions
 {
-    public static class ServiceExtention
+    public static class ServiceExtension
     {
         public static void AddServices(this IServiceCollection service)
         {
             service.AddTransient<IAuthService, AuthService>();
+            service.AddTransient<IPlaylistConverter, PlaylistConverter>();
         }
     }
 }

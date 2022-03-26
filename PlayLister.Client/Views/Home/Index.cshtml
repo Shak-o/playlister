@@ -2,7 +2,18 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div id="container">
+    <h1 class="logo">Fancy Form</h1>
+    <div id="form-box">
+        <i id="prev-btn" class="fas fa-arrow-left"></i>
+        <i id="next-btn" class="fas fa-arrow-right"></i>
+        <div id="input-group">
+            <input id="input-field" required>
+            <label id="input-label"></label>
+            <div id="input-progress"></div>
+        </div>
+        <div id="progress-bar"></div>
+    </div>
 </div>
+
+<script src="~/js/home.js"></script>

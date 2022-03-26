@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using PlayLister.Infrastructure.Context;
+using PlayLister.Infrastructure.Repositories.Extensions;
 using PlayLister.Services;
+using PlayLister.Services.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<PlayListerContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<DbContext, PlayListerContext>();
 builder.Services.AddServices();
+builder.Services.AddRepositories();
 
 var app = builder.Build();
 
