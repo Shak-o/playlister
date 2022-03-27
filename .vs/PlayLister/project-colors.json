@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "1cfa35ea-fa13-4519-94dd-132fc6796ba0": {
+      "ProjectGuid": "1cfa35ea-fa13-4519-94dd-132fc6796ba0",
+      "DisplayName": "PlayLister.Services",
+      "ColorIndex": 0
+    },
+    "1cd0ded2-8070-4d61-864e-537e8170d063": {
+      "ProjectGuid": "1cd0ded2-8070-4d61-864e-537e8170d063",
+      "DisplayName": "PlayLister.Infrastructure",
+      "ColorIndex": 1
+    },
+    "678ee219-26c4-4b84-b732-de94524458df": {
+      "ProjectGuid": "678ee219-26c4-4b84-b732-de94524458df",
+      "DisplayName": "PlayLister.Client",
+      "ColorIndex": 2
+    }
+  },
+  "NextColorIndex": 3
+}

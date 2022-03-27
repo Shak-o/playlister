@@ -23,7 +23,7 @@ namespace PlayLister.Services.Implementation
 
         public async Task<PlaylistData> GetPlaylistItems(string channelId, string playlistName)
         {
-            var playlists = await GetYoutubePlaylists(channelId);
+            var playlists = await GetYoutubePlaylist(channelId);
 
             bool found = false;
 
@@ -60,7 +60,19 @@ namespace PlayLister.Services.Implementation
 
             return data;
         }
-        private async Task<YoutubeData> GetYoutubePlaylists(string channelId)
+
+
+        private async Task<PlaylistData> CheckInSpotify(string accessToken, PlaylistData data)
+        {
+            foreach (var item in data.Items)
+            {
+                var validName = StringHelper.GetValidName(item.Snippet.Title);
+            }
+
+            return data;
+        }
+
+        private async Task<YoutubeData> GetYoutubePlaylist(string channelId)
         {
             var key = _repository.GetKey();
 

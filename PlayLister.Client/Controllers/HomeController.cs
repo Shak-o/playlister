@@ -29,7 +29,7 @@ namespace PlayLister.Client.Controllers
             int index = channelLink.IndexOf("channel/");
             string id = channelLink.Substring(index + 8);
 
-            var list = await _converter.GetPlaylistItems(id, playlistName);
+            //var list = await _converter.GetPlaylistItems(id, playlistName);
 
             return View();
         }
