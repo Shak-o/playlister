@@ -50,9 +50,11 @@ namespace PlayLister.Services.Implementation
             parameters.Add("maxResults", "15");
             parameters.Add("playlistId", _playlistId);
 
-            var uri = UriHelper.CreateUri("https://youtube.googleapis.com/youtube/v3/playlists", parameters);
+            var uri = UriHelper.CreateUri("https://youtube.googleapis.com/youtube/v3/playlistItems", parameters);
 
             var response = await client.GetAsync(uri);
+
+            var test = await response.Content.ReadAsStringAsync();
 
             var data = await JsonSerializer.DeserializeAsync<PlaylistData>(response.Content.ReadAsStream());
 
