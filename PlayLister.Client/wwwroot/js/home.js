@@ -1,7 +1,6 @@
 ﻿// Questions Array
 const questions = [
-    { question: 'Enter Channel Link:' },
-    { question: 'Enter Playlist Name:' }
+    { question: 'Enter Playlist link (must be public):' }
 ];
 
 // Transition Times
@@ -131,5 +130,5 @@ function inputPass() {
 function formComplete() {
     const h1 = document.createElement('h1');
     h1.classList.add('end');
-    window.location.replace("/list?channelLink="+questions[0].answer+"&playlistName="+questions[1].answer);
+    window.location.replace("/list?playlistLink="+questions[0].answer);
 }

@@ -57,14 +57,14 @@
                         </form>
 
                         <div class="filter-result">
-                            <p class="mb-30 ff-montserrat">Total found : @Model.Items.Count</p>
+                            <p class="mb-30 ff-montserrat">Total found : @Model.PageInfo.TotalResults</p>
 
                             @foreach (var data in Model.Items)
                             {
                                 <div class="job-box d-md-flex align-items-center justify-content-between mb-30">
                                     <div class="job-left my-4 d-md-flex align-items-center flex-wrap">
                                         <div class="img-holder mr-md-4 mb-md-0 mb-4 mx-auto mx-md-0 d-md-none d-lg-flex" style="height:@data.Snippet.Thumbnails.ThumbnailDefault.Height; width:@data.Snippet.Thumbnails.ThumbnailDefault.Width;">
-                                            <img src="@data.Snippet.Thumbnails.ThumbnailDefault.Url" style="border-radius: 50%;"/>
+                                            <img src="@data.Snippet.Thumbnails.ThumbnailDefault.Url" class="img-holder mr-md-4 mb-md-0 mb-4 mx-auto mx-md-0 d-md-none d-lg-flex" />
                                         </div>
                                         <div class="job-content">
                                             <h5 class="text-center text-md-left">@data.Snippet.Title</h5>
@@ -90,25 +90,28 @@
                     </div>
 
                     <!-- START Pagination -->
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination pagination-reset justify-content-center">
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                    <i class="zmdi zmdi-long-arrow-left"></i>
-                                </a>
-                            </li>
-                            <li class="page-item"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item d-none d-md-inline-block"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item d-none d-md-inline-block"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item"><a class="page-link" href="#">...</a></li>
-                            <li class="page-item"><a class="page-link" href="#">8</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#">
-                                    <i class="zmdi zmdi-long-arrow-right"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
+                    @if (@ViewBag.Pages > 3)
+                    {
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-reset justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                        <i class="zmdi zmdi-long-arrow-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item"><a class="page-link" href="@Url.Action("ConvertList", "Home", new List<Object> {@Model.PlaylistId, 0} )">1</a></li>
+                                <li class="page-item d-none d-md-inline-block"><a class="page-link" href="@Url.Action("ConvertList", "Home", new List<Object> {@Model.PlaylistId, 1} )">2</a></li>
+                                <li class="page-item d-none d-md-inline-block"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">...</a></li>
+                                <li class="page-item"><a class="page-link" href="#">@ViewBag.Pages</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">
+                                        <i class="zmdi zmdi-long-arrow-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
                     <!-- END Pagination -->
                 </div>
             </div>

@@ -24,14 +24,33 @@ namespace PlayLister.Client.Controllers
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> ConvertList(string channelLink, string playlistName)
+        public async Task<IActionResult> ConvertList(string playlistLink)
         {
-            int index = channelLink.IndexOf("channel/");
-            string id = channelLink.Substring(index + 8);
+            var keyWord = "list=";
+            int index = playlistLink.IndexOf(keyWord);
+            string id = playlistLink.Substring(index + keyWord.Length);
 
-            var list = await _converter.GetPlaylistItems(id, playlistName);
+            var list = await _converter.GetPlaylistItems(id);
+
+            ViewBag.Pages = (list.PageInfo.TotalResults / list.PageInfo.ResultsPerPage);
+
             return View(list);
         }
+
+        // [HttpGet("list")]
+        // public async Task<IActionResult> ConvertList(List<Object> data)
+        // {
+        //     PlaylistData list = await _converter.GetPlaylistItems((string)data[0]);
+        //     for (int i = 0; i < (int) data[1]; i++)
+        //     {
+        //         //list = await _converter.GetPlaylistItems((string)data[0], list.NextPageToken);
+        //     }
+        //     
+        //
+        //     ViewBag.Pages = (list.PageInfo.TotalResults / list.PageInfo.ResultsPerPage);
+        //
+        //     return View(list);
+        // }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

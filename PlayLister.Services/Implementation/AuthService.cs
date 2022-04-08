@@ -12,6 +12,7 @@ using PlayLister.Infrastructure.Models;
 using PlayLister.Infrastructure.Repositories.Interfaces;
 using PlayLister.Services.Helpers;
 using PlayLister.Services.Models;
+using PlayLister.Services.Models.Spotify;
 
 namespace PlayLister.Services.Implementation
 {
@@ -40,14 +41,14 @@ namespace PlayLister.Services.Implementation
             HttpClient client = new HttpClient();
             var appData = GetClientId();
             var plainTextBytes = Encoding.UTF8.GetBytes(appData.ClientId + ":" + appData.Code);
-            string svcCredentials= Convert.ToBase64String(plainTextBytes);
+            string credentials = Convert.ToBase64String(plainTextBytes);
 
             Dictionary<string, string> data = new Dictionary<string, string>();
             data.Add("grant_type", "authorization_code");
             data.Add("code", code);
             data.Add("redirect_uri", "https://localhost:7150/auth/id");
 
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", svcCredentials);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
             var req = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token") { Content = new FormUrlEncodedContent(data) };
             var response = await client.SendAsync(req) ;
 
@@ -56,6 +57,33 @@ namespace PlayLister.Services.Implementation
             var token = await JsonSerializer.DeserializeAsync<AuthData>(contents);
 
             return token;
+        }
+
+        public async Task<RefreshTokenData?> RefreshToken(string token, string refreshToken)
+        {
+            HttpClient client = new HttpClient();
+
+            var appData = GetClientId();
+            var plainTextBytes = Encoding.UTF8.GetBytes(appData.ClientId + ":" + appData.Code);
+            string credentials = Convert.ToBase64String(plainTextBytes);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+
+            Dictionary<string, string> data = new Dictionary<string, string>();
+            data.Add("refresh_token", refreshToken);
+            data.Add("grant_type","refresh_token");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token") {Content = new FormUrlEncodedContent(data)};
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var parsedData = await JsonSerializer.DeserializeAsync<RefreshTokenData>(response.Content.ReadAsStream());
+                return parsedData;
+            }
+            else
+            {
+                throw new Exception("failed to renew token");
+            }
         }
 
         private string GetHash(string text)

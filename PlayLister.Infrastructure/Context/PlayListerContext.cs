@@ -28,5 +28,7 @@ namespace PlayLister.Infrastructure.Context
         }
 
         public DbSet<AppData> AppData { get; set; }
+        public DbSet<PlaylistRepoModel> Playlists { get; set; } 
+        public DbSet<ItemRepoModel> Items { get; set; }
     }
 }

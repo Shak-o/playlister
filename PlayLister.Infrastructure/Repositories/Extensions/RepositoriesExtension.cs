@@ -14,6 +14,7 @@ namespace PlayLister.Infrastructure.Repositories.Extensions
         public static void AddRepositories(this IServiceCollection services)
         {
             services.AddTransient<IAppDataRepository, AppDataRepository>();
+            services.AddTransient<IPlaylistRepository, PlaylistRepository>();
         }
     }
 }

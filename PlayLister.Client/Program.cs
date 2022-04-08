@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using PlayLister.Client.Mapping;
+using PlayLister.Client.Middlewares;
 using PlayLister.Infrastructure.Context;
 using PlayLister.Infrastructure.Repositories.Extensions;
 using PlayLister.Services;
 using PlayLister.Services.Extensions;
+using PlayLister.Services.Models.Spotify;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,7 @@ builder.Services.AddDbContext<PlayListerContext>(opt => opt.UseSqlServer(builder
 builder.Services.AddScoped<DbContext, PlayListerContext>();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
+builder.Services.AddAutoMapper(typeof(MappingConfiguration));
 
 var app = builder.Build();
 
@@ -30,8 +34,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
 
+
+app.UseAuthorization();
+app.UseMiddleware<RefreshTokenMiddleware>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
