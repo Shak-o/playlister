@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayLister.Infrastructure.Models
+namespace PlayLister.Services.Models.ServiceModels
 {
-    public class PlaylistRepoModel
+    public class PlaylistServiceModel
     {
         public string Id { get; set; }
-        public List<ItemRepoModel> Items { get; set; }
+        public List<ItemServiceModel> Items { get; set; }
         public int ResultsPerPage { get; set; }
         public int TotalResults { get; set; }
         public string NextPageToken { get; set; }

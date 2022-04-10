@@ -4,7 +4,7 @@
 
 namespace PlayLister.Infrastructure.Migrations
 {
-    public partial class initial : Migration
+    public partial class initalChanged : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -25,7 +25,9 @@ namespace PlayLister.Infrastructure.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ResultsPerPage = table.Column<int>(type: "int", nullable: false),
-                    TotalResults = table.Column<int>(type: "int", nullable: false)
+                    TotalResults = table.Column<int>(type: "int", nullable: false),
+                    NextPageToken = table.Column<string>(type: "nvarchar(1200)", maxLength: 1200, nullable: false),
+                    PreviousPageToken = table.Column<string>(type: "nvarchar(1200)", maxLength: 1200, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -38,9 +40,9 @@ namespace PlayLister.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2250)", maxLength: 2250, nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     Height = table.Column<int>(type: "int", nullable: false),
                     Width = table.Column<int>(type: "int", nullable: false),
                     PlaylistId = table.Column<string>(type: "nvarchar(450)", nullable: false)

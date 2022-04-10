@@ -3,6 +3,7 @@ using PlayLister.Client.Models;
 using System.Diagnostics;
 using PlayLister.Services.Interfaces;
 using PlayLister.Services.Models;
+using PlayLister.Services.Models.ServiceModels;
 
 namespace PlayLister.Client.Controllers
 {
@@ -32,25 +33,20 @@ namespace PlayLister.Client.Controllers
 
             var list = await _converter.GetPlaylistItems(id);
 
-            ViewBag.Pages = (list.PageInfo.TotalResults / list.PageInfo.ResultsPerPage);
+            ViewBag.Pages = (list.TotalResults / list.ResultsPerPage);
 
             return View(list);
         }
 
-        // [HttpGet("list")]
-        // public async Task<IActionResult> ConvertList(List<Object> data)
-        // {
-        //     PlaylistData list = await _converter.GetPlaylistItems((string)data[0]);
-        //     for (int i = 0; i < (int) data[1]; i++)
-        //     {
-        //         //list = await _converter.GetPlaylistItems((string)data[0], list.NextPageToken);
-        //     }
-        //     
-        //
-        //     ViewBag.Pages = (list.PageInfo.TotalResults / list.PageInfo.ResultsPerPage);
-        //
-        //     return View(list);
-        // }
+        [HttpGet("listPage")]
+        public async Task<IActionResult> Page(string id, int page)
+        {
+            PlaylistServiceModel data = await _converter.GetPlaylistItems(id, page);
+
+            ViewBag.Pages = (data.TotalResults / data.ResultsPerPage);
+        
+            return View(data);
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

@@ -21,7 +21,7 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
 
         public async Task<PlaylistRepoModel> GetPlaylistItemsAsync(string id, int page)
         {
-            var data = await _context.Playlists.FirstOrDefaultAsync(x => x.Id == id);
+            var data = await _context.Playlists.Include(x => x.Items).FirstOrDefaultAsync(x => x.Id == id);
             var maxPage = data.Items.Count / 15;
 
             if (page < maxPage)
@@ -34,6 +34,20 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
 
         public async Task AddPlaylist(PlaylistRepoModel playlist)
         {
+            playlist.PreviousPageToken ??= string.Empty;
+            playlist.NextPageToken ??= string.Empty;
+            foreach (var item in playlist.Items)
+            {
+                if (item.Description.Length >= 2250)
+                {
+                    item.Description = item.Description.Substring(0, 2249);
+                }
+                if (item.Title.Length > 500)
+                {
+                    item.Title = item.Title.Substring(0, 499);
+                }
+            }
+
             try
             {
                 var check = _context.Playlists.FirstOrDefault(x => x.Id == playlist.Id);
@@ -47,6 +61,52 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task AddOnlyItem(PlaylistRepoModel playlist)
+        {
+            playlist.PreviousPageToken ??= string.Empty;
+            playlist.NextPageToken ??= string.Empty;
+            foreach (var item in playlist.Items)
+            {
+                if (item.Description.Length >= 2250)
+                {
+                    item.Description = item.Description.Substring(0, 2249);
+                }
+
+                if (item.Title.Length > 500)
+                {
+                    item.Title = item.Title.Substring(0, 499);
+                }
+            }
+
+            try
+            {
+                foreach (var item in playlist.Items)
+                {
+                    var check = await _context.Items.FirstOrDefaultAsync(x => x.Title == item.Title);
+                    if (check == null)
+                    {
+                        item.PlaylistId = playlist.Id;
+                        _context.Items.Add(item);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool> CheckIfExists(string id)
+        {
+            var check = await _context.Playlists.FirstOrDefaultAsync(x => x.Id == id);
+            if (check != null)
+                return true;
+            else
+                return false;
         }
     }
 }

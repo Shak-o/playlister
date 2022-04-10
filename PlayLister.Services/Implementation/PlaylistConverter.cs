@@ -10,6 +10,7 @@ using PlayLister.Infrastructure.Repositories.Interfaces;
 using PlayLister.Services.Helpers;
 using PlayLister.Services.Interfaces;
 using PlayLister.Services.Models;
+using PlayLister.Services.Models.ServiceModels;
 
 namespace PlayLister.Services.Implementation
 {
@@ -26,44 +27,85 @@ namespace PlayLister.Services.Implementation
             _playlistRepo = playlistRepo;
         }
 
-        public async Task<PlaylistData> GetPlaylistItems(string playlistId)
+        public async Task<PlaylistServiceModel> GetPlaylistItems(string playlistId)
         {
             var key = _repository.GetKey();
+            if (!await _playlistRepo.CheckIfExists(playlistId))
+            {
 
-            HttpClient client = new HttpClient();
 
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
-            
-            parameters.Add("key", key.Code);
-            parameters.Add("part", "snippet");
-            parameters.Add("maxResults", "1000");
-            parameters.Add("playlistId", playlistId);
+                HttpClient client = new HttpClient();
 
-            var uri = UriHelper.CreateUri("https://youtube.googleapis.com/youtube/v3/playlistItems", parameters);
+                Dictionary<string, string> parameters = new Dictionary<string, string>();
 
-            var response = await client.GetAsync(uri);
+                parameters.Add("key", key.Code);
+                parameters.Add("part", "snippet");
+                parameters.Add("maxResults", "50");
+                parameters.Add("playlistId", playlistId);
 
-            var data = await JsonSerializer.DeserializeAsync<PlaylistData>(response.Content.ReadAsStream());
+                var uri = UriHelper.CreateUri("https://youtube.googleapis.com/youtube/v3/playlistItems", parameters);
 
-            data.PlaylistId = playlistId;
+                var response = await client.GetAsync(uri);
 
-            await SavePlaylist(data);
+                var data = await JsonSerializer.DeserializeAsync<PlaylistData>(response.Content.ReadAsStream());
+                PlaylistData? dataSec = new PlaylistData();
+                data.PlaylistId = playlistId;
+                var dataToReturn = new PlaylistServiceModel();
+                if (data != null)
+                {
+                    var map = _mapper.Map<PlaylistData, PlaylistRepoModel>(data);
+                    await _playlistRepo.AddPlaylist(map);
+                    dataToReturn = _mapper.Map<PlaylistRepoModel, PlaylistServiceModel>(map);
+                    data.Items = data.Items.Take(new Range(0, 15)).ToList();
+                }
+                else
+                {
+                    throw new Exception("was returned nothing");
 
-            data.Items = data.Items.Take(new Range(0, 15)).ToList();
+                }
 
-            return data;
-                
+                if (data.PageInfo.TotalResults >= 50)
+                {
+                    var count = data.PageInfo.TotalResults / data.PageInfo.ResultsPerPage;
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (dataSec.NextPageToken == string.Empty || dataSec.NextPageToken == null)
+                        {
+                            parameters.Add("pageToken", data.NextPageToken);
+                        }
+                        else
+                        {
+                            parameters.Remove("pageToken");
+                            parameters.Add("pageToken", dataSec.NextPageToken);
+                        }
+
+                        uri = UriHelper.CreateUri("https://youtube.googleapis.com/youtube/v3/playlistItems",
+                            parameters);
+                        response = await client.GetAsync(uri);
+                        dataSec = await JsonSerializer.DeserializeAsync<PlaylistData>(response.Content.ReadAsStream());
+                        dataSec.PlaylistId = playlistId;
+                        if (dataSec != null)
+                        {
+                            var map = _mapper.Map<PlaylistData, PlaylistRepoModel>(dataSec);
+                            await _playlistRepo.AddOnlyItem(map);
+                        }
+                    }
+                }
+
+                return dataToReturn;
+            }
+            else
+            {
+                var data = await GetPlaylistItems(playlistId, 0);
+                return data;
+            }
         }
 
-        public async Task<PlaylistData> GetPlaylistItems(Guid id,int page)
+        public async Task<PlaylistServiceModel> GetPlaylistItems(string id,int page)
         {
-            return null;
-        }
-
-        public async Task SavePlaylist(PlaylistData data)
-        {
-            var map = _mapper.Map<PlaylistData, PlaylistRepoModel>(data);
-            await _playlistRepo.AddPlaylist(map);
+            var data = await _playlistRepo.GetPlaylistItemsAsync(id, page);
+            var map = _mapper.Map<PlaylistRepoModel, PlaylistServiceModel>(data);
+            return map;
         }
 
         private async Task<PlaylistData> CheckInSpotify(string accessToken, PlaylistData data)

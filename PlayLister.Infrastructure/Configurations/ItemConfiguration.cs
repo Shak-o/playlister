@@ -15,11 +15,11 @@ namespace PlayLister.Infrastructure.Configurations
         {
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Description);
+            builder.Property(x => x.Description).HasMaxLength(2250);
             builder.Property(x => x.Height);
             builder.Property(x => x.Width);
-            builder.Property(x => x.Title);
-            builder.Property(x => x.Url);
+            builder.Property(x => x.Title).HasMaxLength(500);
+            builder.Property(x => x.Url).HasMaxLength(2000);
 
             builder.HasOne<PlaylistRepoModel>(x => x.Playlist).WithMany(x => x.Items);
         }

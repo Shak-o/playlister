@@ -11,8 +11,8 @@ using PlayLister.Infrastructure.Context;
 namespace PlayLister.Infrastructure.Migrations
 {
     [DbContext(typeof(PlayListerContext))]
-    [Migration("20220408202929_initial")]
-    partial class initial
+    [Migration("20220410094610_initalChanged")]
+    partial class initalChanged
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -44,7 +44,8 @@ namespace PlayLister.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2250)
+                        .HasColumnType("nvarchar(2250)");
 
                     b.Property<int>("Height")
                         .HasColumnType("int");
@@ -55,11 +56,13 @@ namespace PlayLister.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Url")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<int>("Width")
                         .HasColumnType("int");
@@ -75,6 +78,16 @@ namespace PlayLister.Infrastructure.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("NextPageToken")
+                        .IsRequired()
+                        .HasMaxLength(1200)
+                        .HasColumnType("nvarchar(1200)");
+
+                    b.Property<string>("PreviousPageToken")
+                        .IsRequired()
+                        .HasMaxLength(1200)
+                        .HasColumnType("nvarchar(1200)");
 
                     b.Property<int>("ResultsPerPage")
                         .HasColumnType("int");

@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PlayLister.Services.Models;
+using PlayLister.Services.Models.ServiceModels;
 
 namespace PlayLister.Services.Interfaces
 {
     public interface IPlaylistConverter
     {
-        Task<PlaylistData> GetPlaylistItems(string platListId);
-        Task<PlaylistData> GetPlaylistItems(Guid id, int page);
-        Task SavePlaylist(PlaylistData data);
+        Task<PlaylistServiceModel> GetPlaylistItems(string platListId);
+        Task<PlaylistServiceModel> GetPlaylistItems(string id, int page);
         Task MakeSpotifyPlaylist(string playlistId);
     }
 }

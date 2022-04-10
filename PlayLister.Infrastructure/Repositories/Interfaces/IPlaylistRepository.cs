@@ -11,5 +11,7 @@ namespace PlayLister.Infrastructure.Repositories.Interfaces
     {
         Task<PlaylistRepoModel> GetPlaylistItemsAsync(string id,int page);
         Task AddPlaylist(PlaylistRepoModel playlist);
+        Task AddOnlyItem(PlaylistRepoModel playlist);
+        Task<bool> CheckIfExists(string id);
     }
 }
