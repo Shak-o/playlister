@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using PlayLister.Services.Helpers;
 using PlayLister.Services.Interfaces;
 using PlayLister.Services.Models;
 using PlayLister.Services.Models.ServiceModels;
+using PlayLister.Services.Models.Spotify;
 
 namespace PlayLister.Services.Implementation
 {
@@ -32,8 +34,6 @@ namespace PlayLister.Services.Implementation
             var key = _repository.GetKey();
             if (!await _playlistRepo.CheckIfExists(playlistId))
             {
-
-
                 HttpClient client = new HttpClient();
 
                 Dictionary<string, string> parameters = new Dictionary<string, string>();
@@ -108,11 +108,27 @@ namespace PlayLister.Services.Implementation
             return map;
         }
 
-        private async Task<PlaylistData> CheckInSpotify(string accessToken, PlaylistData data)
+        private async Task<PlaylistServiceModel> CheckInSpotify(string accessToken, PlaylistServiceModel data)
         {
             foreach (var item in data.Items)
             {
-                var validName = StringHelper.GetValidName(item.Snippet.Title);
+                var validName = StringHelper.GetValidName(item.Title);
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                Dictionary<string, string> parameters = new Dictionary<string, string>();
+
+                parameters.Add("type", "track");
+                parameters.Add("q", validName);
+
+                var uri = UriHelper.CreateUri("https://api.spotify.com/v1/search", parameters);
+
+                var response = await client.GetAsync(uri);
+
+                var convert = await JsonSerializer.DeserializeAsync<SearchResult>(response.Content.ReadAsStream());
+                if (convert.Result.MusicList.Any(x => x.Name.ToLower() == validName))
+                {
+                    //TODO:Filter logic here
+                }
             }
 
             return data;
@@ -139,9 +155,9 @@ namespace PlayLister.Services.Implementation
             return data;
         }
 
-        public Task MakeSpotifyPlaylist(string playlistId)
+        public async Task MakeSpotifyPlaylist(string playlistId, string accessToken, PlaylistServiceModel playlistData)
         {
-            throw new NotImplementedException();
+            await CheckInSpotify(accessToken, playlistData);
         }
     }
 }

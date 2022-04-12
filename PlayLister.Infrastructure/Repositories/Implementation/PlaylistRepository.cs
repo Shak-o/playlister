@@ -38,10 +38,8 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
             playlist.NextPageToken ??= string.Empty;
             foreach (var item in playlist.Items)
             {
-                if (item.Description.Length >= 2250)
-                {
-                    item.Description = item.Description.Substring(0, 2249);
-                }
+                item.Description = item.Description.Substring(0, 200);
+                
                 if (item.Title.Length > 500)
                 {
                     item.Title = item.Title.Substring(0, 499);
@@ -68,12 +66,9 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
             playlist.PreviousPageToken ??= string.Empty;
             playlist.NextPageToken ??= string.Empty;
             foreach (var item in playlist.Items)
-            {
-                if (item.Description.Length >= 2250)
-                {
-                    item.Description = item.Description.Substring(0, 2249);
-                }
-
+            { 
+                item.Description = item.Description.Substring(0, 200);
+                
                 if (item.Title.Length > 500)
                 {
                     item.Title = item.Title.Substring(0, 499);

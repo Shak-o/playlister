@@ -30,9 +30,13 @@ namespace PlayLister.Services.Helpers
                         validName = firstPart + secondPart;
                     }
                 }
-                if ((c == ']' || c == ')') && name.IndexOf(c) == name.Length - 1)
+                else if ((c == ']' || c == ')') && name.IndexOf(c) == name.Length - 1)
                 {
                     validName = c == ']' ? name.Substring(0, name.IndexOf('[')).Trim() : name.Substring(0, name.IndexOf('(')).Trim();
+                }
+                else
+                {
+                    validName += c;
                 }
             }
 

@@ -9,7 +9,13 @@ namespace PlayLister.Services.Models.Spotify
 {
     public class SearchResult
     {
-        [JsonPropertyName("tracks")]
-        public Tracks Result { get; set; }
+        [JsonPropertyName("items")]
+        public List<Music> MusicList { get; set; }
+
+        [JsonPropertyName("next")]
+        public string Next { get; set; }
+
+        [JsonPropertyName("previous")]
+        public string Previous { get; set; }
     }
 }

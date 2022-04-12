@@ -12,6 +12,6 @@ namespace PlayLister.Services.Interfaces
     {
         Task<PlaylistServiceModel> GetPlaylistItems(string platListId);
         Task<PlaylistServiceModel> GetPlaylistItems(string id, int page);
-        Task MakeSpotifyPlaylist(string playlistId);
+        Task MakeSpotifyPlaylist(string playlistId, string accessToken, PlaylistServiceModel playlist);
     }
 }
