@@ -9,6 +9,7 @@ using AutoMapper;
 using PlayLister.Infrastructure.Models;
 using PlayLister.Infrastructure.Repositories.Interfaces;
 using PlayLister.Services.Helpers;
+using PlayLister.Services.Infrastructure;
 using PlayLister.Services.Interfaces;
 using PlayLister.Services.Models;
 using PlayLister.Services.Models.ServiceModels;
@@ -96,28 +97,33 @@ namespace PlayLister.Services.Implementation
             }
             else
             {
-                var data = await GetPlaylistItems(playlistId, 0);
+                var data = await GetPlaylistDataPerPage(playlistId, 0);
                 return data;
             }
         }
 
-        public async Task<PlaylistServiceModel> GetPlaylistItems(string id,int page)
+        public async Task<PlaylistServiceModel> GetPlaylistDataPerPage(string id,int page)
         {
             var data = await _playlistRepo.GetPlaylistItemsAsync(id, page);
             var map = _mapper.Map<PlaylistRepoModel, PlaylistServiceModel>(data);
             return map;
         }
 
-        private async Task<PlaylistServiceModel> CheckInSpotify(string accessToken, PlaylistServiceModel data)
+        private async Task<List<String>> CheckInSpotify(string accessToken, PlaylistServiceModel data)
         {
+            var toReturn = new List<string>();
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            parameters.Add("type", "track");
+
             foreach (var item in data.Items)
             {
                 var validName = StringHelper.GetValidName(item.Title);
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                Dictionary<string, string> parameters = new Dictionary<string, string>();
+                
+                if (parameters.ContainsKey("q"))
+                    parameters.Remove("q");
 
-                parameters.Add("type", "track");
                 parameters.Add("q", validName);
 
                 var uri = UriHelper.CreateUri("https://api.spotify.com/v1/search", parameters);
@@ -125,13 +131,30 @@ namespace PlayLister.Services.Implementation
                 var response = await client.GetAsync(uri);
 
                 var convert = await JsonSerializer.DeserializeAsync<SearchResult>(response.Content.ReadAsStream());
-                if (convert.Result.MusicList.Any(x => x.Name.ToLower() == validName))
+
+                foreach (var music in convert!.Result.MusicList)
                 {
-                    //TODO:Filter logic here
+                    string firstPart = string.Empty;
+                    string secondPart = string.Empty;
+
+                    if (validName.Contains('-'))
+                    {
+                        int index = validName.IndexOf('-');
+                        firstPart = validName.Substring(index + 1, validName.Length - index - 1).ToLower().Trim();
+                        secondPart = validName.Substring(0, index).ToLower().Trim();
+                    }
+
+                    string lowerName = music.Name.ToLower();
+
+                    if (lowerName.Like($"%{validName}%") || lowerName.Contains(firstPart) || lowerName.Contains(secondPart))
+                    {
+                        toReturn.Add(music.Uri);
+                        break;
+                    }
                 }
             }
 
-            return data;
+            return toReturn;
         }
 
         private async Task<YoutubeData> GetYoutubePlaylist(string channelId)
@@ -155,9 +178,15 @@ namespace PlayLister.Services.Implementation
             return data;
         }
 
-        public async Task MakeSpotifyPlaylist(string playlistId, string accessToken, PlaylistServiceModel playlistData)
+        public async Task MakeSpotifyPlaylist(string playlistId, string accessToken)
         {
-            await CheckInSpotify(accessToken, playlistData);
+            var data = await _playlistRepo.GetFullPlaylist(playlistId);
+            var foundMusic = await CheckInSpotify(accessToken, _mapper.Map<PlaylistRepoModel, PlaylistServiceModel>(data));
+        }
+
+        public async Task RemoveItemFromPlaylist(int id, string playlistId)
+        {
+            await _playlistRepo.RemoveItem(id, playlistId);
         }
     }
 }

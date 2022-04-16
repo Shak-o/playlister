@@ -11,7 +11,8 @@ namespace PlayLister.Services.Interfaces
     public interface IPlaylistConverter
     {
         Task<PlaylistServiceModel> GetPlaylistItems(string platListId);
-        Task<PlaylistServiceModel> GetPlaylistItems(string id, int page);
-        Task MakeSpotifyPlaylist(string playlistId, string accessToken, PlaylistServiceModel playlist);
+        Task<PlaylistServiceModel> GetPlaylistDataPerPage(string id, int page);
+        Task RemoveItemFromPlaylist(int id, string playlistId);
+        Task MakeSpotifyPlaylist(string playlistId, string accessToken);
     }
 }

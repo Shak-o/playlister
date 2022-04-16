@@ -36,7 +36,7 @@ namespace PlayLister.Client.Controllers
             ViewBag.Pages = (list.TotalResults / list.ResultsPerPage);
             ViewBag.CurrentPage = 0;
 
-            //await _converter.MakeSpotifyPlaylist(id, HttpContext.Request.Cookies["accessToken"], list);
+            //await _converter.MakeSpotifyPlaylist(id, HttpContext.Request.Cookies["accessToken"]);
 
             return View(list);
         }
@@ -44,12 +44,19 @@ namespace PlayLister.Client.Controllers
         [HttpGet("listPage")]
         public async Task<IActionResult> Page(string id, int page)
         {
-            PlaylistServiceModel data = await _converter.GetPlaylistItems(id, page);
+            PlaylistServiceModel data = await _converter.GetPlaylistDataPerPage(id, page);
 
             ViewBag.Pages = (data.TotalResults / data.ResultsPerPage);
             ViewBag.CurrentPage = page;
 
             return View(data);
+        }
+
+        [HttpGet("remove")]
+        public async Task<IActionResult> Remove(int id, string playlistId, int pageRed)
+        {
+            await _converter.RemoveItemFromPlaylist(id, playlistId);
+            return RedirectToAction("Page", new {id = playlistId, page = pageRed });
         }
 
         [HttpGet("test")]

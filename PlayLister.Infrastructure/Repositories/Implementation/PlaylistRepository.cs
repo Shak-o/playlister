@@ -21,15 +21,20 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
 
         public async Task<PlaylistRepoModel> GetPlaylistItemsAsync(string id, int page)
         {
-            var data = await _context.Playlists.Include(x => x.Items).FirstOrDefaultAsync(x => x.Id == id);
+            var data = await _context.Playlists.Include(x => x.Items).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
             var maxPage = data.Items.Count / 15;
 
-            if (page < maxPage)
-                data.Items = data.Items.Take(new Range(15 * page, 15 * (page + 1))).ToList();
-            else
-                data.Items = null;
+             if (page < maxPage)
+                 data.Items = data.Items.Take(new Range(15 * page, 15 * (page + 1))).ToList();
+             else
+                 data.Items = null;
 
             return data;
+        }
+
+        public async Task<PlaylistRepoModel> GetFullPlaylist(string id)
+        {
+            return await _context.Playlists.Include(x => x.Items).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task AddPlaylist(PlaylistRepoModel playlist)
@@ -92,6 +97,16 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task RemoveItem(int id, string playlistId)
+        {
+            var check = await _context.Items.FirstOrDefaultAsync(x => x.Id == id && x.PlaylistId == playlistId);
+            if (check != null)
+            {
+                _context.Items.Remove(check);
+                await _context.SaveChangesAsync();
             }
         }
 

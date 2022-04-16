@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PlayLister.Services.Models.Spotify
 {
-    public class SearchResult
+    public class Tracks
     {
         [JsonPropertyName("items")]
         public List<Music> MusicList { get; set; }

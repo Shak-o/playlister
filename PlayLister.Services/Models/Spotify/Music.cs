@@ -19,5 +19,7 @@ namespace PlayLister.Services.Models
 
         [JsonPropertyName("popularity")]
         public int Popularity { get; set; }
+        [JsonPropertyName("uri")]
+        public string Uri { get; set; }
     }
 }
