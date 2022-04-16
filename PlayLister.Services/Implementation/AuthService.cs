@@ -7,6 +7,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using PlayLister.Infrastructure.Context;
 using PlayLister.Infrastructure.Models;
 using PlayLister.Infrastructure.Repositories.Interfaces;
@@ -19,19 +21,21 @@ namespace PlayLister.Services.Implementation
     public class AuthService : IAuthService
     {
         private readonly IAppDataRepository _repository;
-
-        public AuthService(IAppDataRepository repository)
+        private readonly IConfiguration _configuration;
+        public AuthService(IAppDataRepository repository, IConfiguration confiugration)
         {
             _repository = repository;
+            _configuration = confiugration;
         }
 
         public string GetUri()
         {
             var things = new Dictionary<string, string>();
+            var t = _configuration.GetSection("ApplicationUrl")["Url"];
             things.Add("client_id", GetClientId().ClientId);
             things.Add("response_type","code");
             things.Add("scope", "playlist-modify-public");
-            things.Add("redirect_uri", "https://localhost:7150/auth/id");
+            things.Add("redirect_uri", $"{_configuration.GetSection("ApplicationUrl")["Url"]}/auth/id");
             var uri = UriHelper.CreateUri("https://accounts.spotify.com/authorize", things);
             return uri;
         }
@@ -46,7 +50,7 @@ namespace PlayLister.Services.Implementation
             Dictionary<string, string> data = new Dictionary<string, string>();
             data.Add("grant_type", "authorization_code");
             data.Add("code", code);
-            data.Add("redirect_uri", "https://localhost:7150/auth/id");
+            data.Add("redirect_uri", $"{_configuration.GetSection("ApplicationUrl")["Url"]}/auth/id");
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
             var req = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token") { Content = new FormUrlEncodedContent(data) };

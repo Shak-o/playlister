@@ -52,6 +52,18 @@ namespace PlayLister.Client.Controllers
             return View(data);
         }
 
+        [HttpGet("lezGetStarted")]
+        public async Task<IActionResult> Convert(string playlistId)
+        {
+            var token = HttpContext.Request.Cookies["accessToken"];
+            if (token != null)
+            {
+                await _converter.MakeSpotifyPlaylist(playlistId, token);
+            }
+
+            return RedirectToAction("Page", new {id = playlistId, page = 0});
+        }
+
         [HttpGet("remove")]
         public async Task<IActionResult> Remove(int id, string playlistId, int pageRed)
         {

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PlayLister.Client.Mapping;
 using PlayLister.Client.Middlewares;
+using PlayLister.Client.Models;
 using PlayLister.Infrastructure.Context;
 using PlayLister.Infrastructure.Repositories.Extensions;
 using PlayLister.Services;
@@ -16,9 +17,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<PlayListerContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<DbContext, PlayListerContext>();
 builder.Services.AddServices();
+builder.Services.AddOptions<ApplicationUrlOptions>()
+    .Bind(builder.Configuration.GetSection(ApplicationUrlOptions.ApplicationUrl));
 builder.Services.AddRepositories();
 builder.Services.AddAutoMapper(typeof(MappingConfiguration));
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

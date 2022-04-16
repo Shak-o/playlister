@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -111,78 +112,132 @@ namespace PlayLister.Services.Implementation
 
         private async Task<List<String>> CheckInSpotify(string accessToken, PlaylistServiceModel data)
         {
-            var toReturn = new List<string>();
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
-            parameters.Add("type", "track");
-
-            foreach (var item in data.Items)
+            try
             {
-                var validName = StringHelper.GetValidName(item.Title);
-                
-                if (parameters.ContainsKey("q"))
-                    parameters.Remove("q");
+                var toReturn = new List<string>();
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                Dictionary<string, string> parameters = new Dictionary<string, string>();
+                parameters.Add("type", "track");
 
-                parameters.Add("q", validName);
-
-                var uri = UriHelper.CreateUri("https://api.spotify.com/v1/search", parameters);
-
-                var response = await client.GetAsync(uri);
-
-                var convert = await JsonSerializer.DeserializeAsync<SearchResult>(response.Content.ReadAsStream());
-
-                foreach (var music in convert!.Result.MusicList)
+                foreach (var item in data.Items)
                 {
-                    string firstPart = string.Empty;
-                    string secondPart = string.Empty;
+                    var validName = StringHelper.GetValidName(item.Title);
 
-                    if (validName.Contains('-'))
+                    if (parameters.ContainsKey("q"))
+                        parameters.Remove("q");
+
+                    parameters.Add("q", validName);
+
+                    var uri = UriHelper.CreateUri("https://api.spotify.com/v1/search", parameters);
+
+                    var response = await client.GetAsync(uri);
+
+                    var convert = await JsonSerializer.DeserializeAsync<SearchResult>(response.Content.ReadAsStream());
+
+                    foreach (var music in convert!.Result.MusicList)
                     {
-                        int index = validName.IndexOf('-');
-                        firstPart = validName.Substring(index + 1, validName.Length - index - 1).ToLower().Trim();
-                        secondPart = validName.Substring(0, index).ToLower().Trim();
-                    }
+                        string firstPart = string.Empty;
+                        string secondPart = string.Empty;
 
-                    string lowerName = music.Name.ToLower();
+                        if (validName.Contains('-'))
+                        {
+                            int index = validName.IndexOf('-');
+                            firstPart = validName.Substring(index + 1, validName.Length - index - 1).ToLower().Trim();
+                            secondPart = validName.Substring(0, index).ToLower().Trim();
+                        }
 
-                    if (lowerName.Like($"%{validName}%") || lowerName.Contains(firstPart) || lowerName.Contains(secondPart))
-                    {
-                        toReturn.Add(music.Uri);
-                        break;
+                        string lowerName = music.Name.ToLower();
+
+                        if (lowerName.Like($"%{validName}%") || lowerName.Contains(firstPart) ||
+                            lowerName.Contains(secondPart))
+                        {
+                            toReturn.Add(music.Uri);
+                            break;
+                        }
                     }
                 }
-            }
 
-            return toReturn;
+                return toReturn;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Exception in CheckinSpotify: " + ex.Message);
+            }
+           
         }
 
         private async Task<YoutubeData> GetYoutubePlaylist(string channelId)
         {
-            var key = _repository.GetKey();
+            try
+            {
+                var key = _repository.GetKey();
 
-            HttpClient client = new HttpClient();
+                HttpClient client = new HttpClient();
 
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
+                Dictionary<string, string> parameters = new Dictionary<string, string>();
 
-            parameters.Add("key", key.Code);
-            parameters.Add("part", "snippet");
-            parameters.Add("channelId", channelId);
+                parameters.Add("key", key.Code);
+                parameters.Add("part", "snippet");
+                parameters.Add("channelId", channelId);
 
-            var uri = UriHelper.CreateUri("https://youtube.googleapis.com/youtube/v3/playlists", parameters);
+                var uri = UriHelper.CreateUri("https://youtube.googleapis.com/youtube/v3/playlists", parameters);
 
-            var response = await client.GetAsync(uri);
+                var response = await client.GetAsync(uri);
 
-            var data = await JsonSerializer.DeserializeAsync<YoutubeData>(response.Content.ReadAsStream());
+                var data = await JsonSerializer.DeserializeAsync<YoutubeData>(response.Content.ReadAsStream());
 
-            return data;
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in GetYoutubePlaylist: " + ex.Message);
+            }
+            
         }
 
         public async Task MakeSpotifyPlaylist(string playlistId, string accessToken)
         {
-            var data = await _playlistRepo.GetFullPlaylist(playlistId);
-            var foundMusic = await CheckInSpotify(accessToken, _mapper.Map<PlaylistRepoModel, PlaylistServiceModel>(data));
+            try
+            {
+                var data = await _playlistRepo.GetFullPlaylist(playlistId);
+                var foundMusic = await CheckInSpotify(accessToken,
+                    _mapper.Map<PlaylistRepoModel, PlaylistServiceModel>(data));
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var response = await client.GetAsync("https://api.spotify.com/v1/me");
+                var userData = await JsonSerializer.DeserializeAsync<User>(response.Content.ReadAsStream());
+
+                var toPost = new {name = Guid.NewGuid().ToString()};
+                if (userData != null)
+                {
+                    var createResponse = await client.PostAsync($"https://api.spotify.com/v1/users/{userData.Id}/playlists", new StringContent(JsonSerializer.Serialize(toPost)));
+                    var playlist = await JsonSerializer.DeserializeAsync<PlaylistResponse>(createResponse.Content.ReadAsStream());
+                    if (foundMusic.Count > 100)
+                    {
+                        for (int i = 0; i <= foundMusic.Count / 100; i++)
+                        {
+                            if (i * 100 < foundMusic.Count)
+                            {
+                                var addItemData = new { uris = foundMusic.Take(new Range(100 * i, 100 * (i + 1))) };
+                                await client.PostAsync($"https://api.spotify.com/v1/playlists/{playlist.Id}/tracks", new StringContent(JsonSerializer.Serialize(addItemData)));
+                            }
+                            else
+                            {
+                                var addItemData = new { uris = foundMusic.Take(new Range(100 * i, foundMusic.Count)) };
+                                await client.PostAsync($"https://api.spotify.com/v1/playlists/{playlist.Id}/tracks", new StringContent(JsonSerializer.Serialize(addItemData)));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error happened in MakeSpotifyPlaylist: " + ex.Message);
+            }
         }
+
 
         public async Task RemoveItemFromPlaylist(int id, string playlistId)
         {
