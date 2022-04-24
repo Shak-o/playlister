@@ -53,12 +53,14 @@ namespace PlayLister.Services.Implementation
                 PlaylistData? dataSec = new PlaylistData();
                 data.PlaylistId = playlistId;
                 var dataToReturn = new PlaylistServiceModel();
+
                 if (data != null)
                 {
                     var map = _mapper.Map<PlaylistData, PlaylistRepoModel>(data);
+                    map.ResultsPerPage = 15;
                     await _playlistRepo.AddPlaylist(map);
                     dataToReturn = _mapper.Map<PlaylistRepoModel, PlaylistServiceModel>(map);
-                    data.Items = data.Items.Take(new Range(0, 15)).ToList();
+                    dataToReturn.Items = dataToReturn.Items.Take(new Range(0, 15)).ToList();
                 }
                 else
                 {
@@ -119,6 +121,7 @@ namespace PlayLister.Services.Implementation
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 Dictionary<string, string> parameters = new Dictionary<string, string>();
                 parameters.Add("type", "track");
+                parameters.Add("limit", "5");
 
                 foreach (var item in data.Items)
                 {

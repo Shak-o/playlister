@@ -13,6 +13,11 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
     public class PlaylistRepository : IPlaylistRepository
     {
         private readonly PlayListerContext _context;
+        private static readonly Encoding Utf8Encoder = Encoding.GetEncoding(
+            "UTF-8",
+            new EncoderReplacementFallback(string.Empty),
+            new DecoderExceptionFallback()
+        );
 
         public PlaylistRepository(PlayListerContext context)
         {
@@ -41,16 +46,8 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
         {
             playlist.PreviousPageToken ??= string.Empty;
             playlist.NextPageToken ??= string.Empty;
-            foreach (var item in playlist.Items)
-            {
-                item.Description = item.Description.Substring(0, 200);
-                
-                if (item.Title.Length > 500)
-                {
-                    item.Title = item.Title.Substring(0, 499);
-                }
-            }
-
+            playlist = CheckTextLength(playlist);
+            
             try
             {
                 var check = _context.Playlists.FirstOrDefault(x => x.Id == playlist.Id);
@@ -70,15 +67,7 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
         {
             playlist.PreviousPageToken ??= string.Empty;
             playlist.NextPageToken ??= string.Empty;
-            foreach (var item in playlist.Items)
-            { 
-                item.Description = item.Description.Substring(0, 200);
-                
-                if (item.Title.Length > 500)
-                {
-                    item.Title = item.Title.Substring(0, 499);
-                }
-            }
+            playlist = CheckTextLength(playlist);
 
             try
             {
@@ -117,6 +106,25 @@ namespace PlayLister.Infrastructure.Repositories.Implementation
                 return true;
             else
                 return false;
+        }
+
+        private  PlaylistRepoModel CheckTextLength(PlaylistRepoModel model)
+        {
+            foreach (var item in model.Items)
+            {
+                if (item.Description.Length > 81)
+                {
+                    item.Description = item.Description.Substring(0, 80);
+                    item.Description = Utf8Encoder.GetString(Utf8Encoder.GetBytes(item.Description));
+                }
+
+                if (item.Title.Length > 150)
+                {
+                    item.Title = item.Title.Substring(0, 149);
+                    item.Title = Utf8Encoder.GetString(Utf8Encoder.GetBytes(item.Title));
+                }
+            }
+            return model;
         }
     }
 }

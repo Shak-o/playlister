@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 
-builder.Services.AddDbContext<PlayListerContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<PlayListerContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<DbContext, PlayListerContext>();
 builder.Services.AddServices();
 builder.Services.AddOptions<ApplicationUrlOptions>()
@@ -32,11 +32,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseDefaultFiles();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-
 
 app.UseAuthorization();
 app.UseMiddleware<RefreshTokenMiddleware>();
